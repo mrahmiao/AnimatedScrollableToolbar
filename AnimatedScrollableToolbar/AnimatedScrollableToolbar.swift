@@ -244,6 +244,10 @@ private extension AnimatedScrollableToolbar {
 
   func setupActionItemViews(items: [ActionItem]) {
 
+    if items.isEmpty {
+      return
+    }
+
     var layoutViews = [String: AnyObject]()
     var constraints = [NSLayoutConstraint]()
 
