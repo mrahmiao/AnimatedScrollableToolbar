@@ -90,7 +90,7 @@ public class AnimatedScrollableToolbar: UIView {
     setupContainerConstraints()
     setupGestures()
   }
-  
+
   public required init?(coder aDecoder: NSCoder) {
     fatalError("\(#function) is not implemented yet.")
   }
@@ -98,9 +98,11 @@ public class AnimatedScrollableToolbar: UIView {
   public func dismissSubitems(sender: AnyObject?) {
     if subitemScrollView != nil {
       delegate?.toolbarWillHideSubitems(toolbar: self)
-        subitemViews.removeAll()
-        subitemScrollView?.removeFromSuperview()
-        subitemScrollView = nil
+      subitemViews.removeAll()
+      subitemScrollView?.removeFromSuperview()
+      subitemScrollView = nil
+      heightConstraint.constant = AnimatedScrollableToolbar.defaultHeight
+      setNeedsLayout()
       delegate?.toolbarDidHideSubitems(toolbar: self)
     }
   }
@@ -158,7 +160,7 @@ extension AnimatedScrollableToolbar {
     if let action = actionItem.action, target = actionItem.target {
       UIApplication.shared().sendAction(action, to: target, from: self, for: nil)
     }
-    
+
     delegate?.toolbar(self, didSelect: actionItem)
 
   }
@@ -300,7 +302,7 @@ private extension AnimatedScrollableToolbar {
 
     heightConstraint = NSLayoutConstraint(item: self, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: AnimatedScrollableToolbar.defaultHeight)
     constraints.append(heightConstraint)
-    
+
     NSLayoutConstraint.activate(constraints)
   }
 
@@ -381,7 +383,7 @@ private extension AnimatedScrollableToolbar {
       self.subitemContentView = subitemContentView
       subitemContentView.translatesAutoresizingMaskIntoConstraints = false
       subitemContentView.backgroundColor = .clear()
-      
+
       subitemScrollView.addSubview(subitemContentView)
       addSubview(subitemScrollView)
 
@@ -389,7 +391,7 @@ private extension AnimatedScrollableToolbar {
                    "subitemScrollView": subitemScrollView,
                    "scrollView": scrollView]
 
-      for format in ["H:|[subitemContentView]|", "V:|[subitemContentView]|", "H:|[subitemScrollView]|", "V:[subitemScrollView(scrollView)]-[scrollView]"] {
+      for format in ["H:|[subitemContentView]|", "V:|[subitemContentView]|", "H:|[subitemScrollView]|", "V:[subitemScrollView(\(AnimatedScrollableToolbar.defaultSubitemWidth))]-[scrollView]"] {
         constraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: format, options: [], metrics: nil, views: views))
       }
 
@@ -410,7 +412,7 @@ private extension AnimatedScrollableToolbar {
       constraints.append(NSLayoutConstraint(item: subitemViews[0], attribute: .bottom, relatedBy: .equal, toItem: subitemContentView, attribute: .bottom, multiplier: 1, constant: 0))
 
       let margin = calcMargin()
-      constraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "H:|-\(margin)-\(layoutAttendees.joined(separator: "-\(margin * 2)-"))-\(margin)-|", options: [.alignAllTop, .alignAllBottom], metrics: nil, views: layoutViews))
+      constraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "H:|-<=\(margin)-\(layoutAttendees.joined(separator: "-\(AnimatedScrollableToolbar.subitemLeadingGap)-"))-<=\(margin)-|", options: [.alignAllTop, .alignAllBottom], metrics: nil, views: layoutViews))
     }
 
     func buildSubitemView(for item: ActionItem, atIndex index: Int) -> ActionItemView {
@@ -422,8 +424,8 @@ private extension AnimatedScrollableToolbar {
       itemView.clipsToBounds = true
       itemView.backgroundImageView.image = UIColor(white: 0.6, alpha: 0.6).generatedImage
 
-      constraints.append(NSLayoutConstraint(item: itemView, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: AnimatedScrollableToolbar.defaultHeight))
-      constraints.append(NSLayoutConstraint(item: itemView, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: AnimatedScrollableToolbar.defaultHeight))
+      constraints.append(NSLayoutConstraint(item: itemView, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: AnimatedScrollableToolbar.defaultSubitemWidth))
+      constraints.append(NSLayoutConstraint(item: itemView, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: AnimatedScrollableToolbar.defaultSubitemWidth))
 
       return itemView
     }
@@ -437,9 +439,11 @@ private extension AnimatedScrollableToolbar {
     func calcMargin() -> CGFloat {
       let screenWidth = UIScreen.main().bounds.width
       let count = CGFloat(subitems.count)
-      let twiceMargin = AnimatedScrollableToolbar.subitemLeadingGap * 2
-      let minMargin = (screenWidth - AnimatedScrollableToolbar.defaultHeight * count - twiceMargin * (count - 1)) / 2
-      return  subitems.count > 5 ? AnimatedScrollableToolbar.subitemLeadingGap : minMargin
+      if subitems.count > AnimatedScrollableToolbar.maximumItemCount {
+        return AnimatedScrollableToolbar.subitemLeadingGap
+      } else {
+        return (screenWidth - AnimatedScrollableToolbar.subitemLeadingGap * (count - 1) - AnimatedScrollableToolbar.defaultSubitemWidth * count) / 2
+      }
     }
 
     func playAppearAnimation() {
@@ -475,7 +479,7 @@ private extension AnimatedScrollableToolbar {
 
     addSubitemScrollView()
     setupSubitemGestures()
-    heightConstraint.constant = 100
+    heightConstraint.constant = AnimatedScrollableToolbar.expandedToolbarHeight
     setNeedsLayout()
     NSLayoutConstraint.activate(constraints)
     playAppearAnimation()
@@ -486,10 +490,11 @@ private extension AnimatedScrollableToolbar {
 
 // MARK: Constants
 private extension AnimatedScrollableToolbar {
-  static let maximumItemCount: Int = 5
+  static let maximumItemCount: Int = 6
   static let defaultHeight: CGFloat = 44.0
+  static let defaultSubitemWidth: CGFloat = 36.0
   static let subitemLeadingGap: CGFloat = 12.0
-  static let subitemBottomGap: CGFloat = 8.0
+  static let expandedToolbarHeight: CGFloat = 44 + 36 + 6
 }
 
 
@@ -504,6 +509,7 @@ extension AnimatedScrollableToolbar {
     public weak var target: AnyObject?
     public var subItems: [ActionItem] = []
     public var tintColor: UIColor?
+    public var isExchangeable: Bool = true
 
     public init(image: UIImage, title: String? = nil, target: AnyObject? = nil, action: Selector? = nil) {
 
@@ -601,7 +607,7 @@ private extension AnimatedScrollableToolbar {
   // MARK: - ActionItemView
   class ActionItemView: UIView {
 
-    static let defaultIconWidth: CGFloat = 30.0
+    static let defaultIconWidth: CGFloat = 22.0
 
     // For the sake of performance, constraints should be activated by superview
     var layoutConstraints: [NSLayoutConstraint] = []
