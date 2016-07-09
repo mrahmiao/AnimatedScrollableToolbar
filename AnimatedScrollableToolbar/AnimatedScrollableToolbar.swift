@@ -20,6 +20,17 @@ public protocol AnimatedScrollableToolbarDelegate: class {
   func toolbar(_ toolbar: AnimatedScrollableToolbar, didShow subitems: [AnimatedScrollableToolbar.ActionItem], atIndex index: Int)
 }
 
+public extension AnimatedScrollableToolbarDelegate {
+  func toolbar(_ toolbar: AnimatedScrollableToolbar, willSelect item: AnimatedScrollableToolbar.ActionItem) {}
+  func toolbar(_ toolbar: AnimatedScrollableToolbar, didSelect item: AnimatedScrollableToolbar.ActionItem) {}
+
+  func toolbarWillHideSubitems(toolbar: AnimatedScrollableToolbar) {}
+  func toolbarDidHideSubitems(toolbar: AnimatedScrollableToolbar) {}
+
+  func toolbar(_ toolbar: AnimatedScrollableToolbar, willShow subitems: [AnimatedScrollableToolbar.ActionItem], atIndex index: Int) {}
+  func toolbar(_ toolbar: AnimatedScrollableToolbar, didShow subitems: [AnimatedScrollableToolbar.ActionItem], atIndex index: Int) {}
+}
+
 // MARK: - AnimatedScrollableToolbar
 public class AnimatedScrollableToolbar: UIView {
 
@@ -663,7 +674,6 @@ private extension AnimatedScrollableToolbar {
         backgroundImageView.topAnchor.constraint(equalTo: topAnchor),
         backgroundImageView.bottomAnchor.constraint(equalTo: bottomAnchor)
       ])
-
     }
   }
 }
