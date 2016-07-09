@@ -8,30 +8,7 @@
 
 import UIKit
 
-// MARK: - AnimatedScrollableToolbarDelegate
-public protocol AnimatedScrollableToolbarDelegate: class {
-  func toolbar(_ toolbar: AnimatedScrollableToolbar, willSelect item: AnimatedScrollableToolbar.ActionItem)
-  func toolbar(_ toolbar: AnimatedScrollableToolbar, didSelect item: AnimatedScrollableToolbar.ActionItem)
-
-  func toolbarWillHideSubitems(toolbar: AnimatedScrollableToolbar)
-  func toolbarDidHideSubitems(toolbar: AnimatedScrollableToolbar)
-
-  func toolbar(_ toolbar: AnimatedScrollableToolbar, willShow subitems: [AnimatedScrollableToolbar.ActionItem], atIndex index: Int)
-  func toolbar(_ toolbar: AnimatedScrollableToolbar, didShow subitems: [AnimatedScrollableToolbar.ActionItem], atIndex index: Int)
-}
-
-public extension AnimatedScrollableToolbarDelegate {
-  func toolbar(_ toolbar: AnimatedScrollableToolbar, willSelect item: AnimatedScrollableToolbar.ActionItem) {}
-  func toolbar(_ toolbar: AnimatedScrollableToolbar, didSelect item: AnimatedScrollableToolbar.ActionItem) {}
-
-  func toolbarWillHideSubitems(toolbar: AnimatedScrollableToolbar) {}
-  func toolbarDidHideSubitems(toolbar: AnimatedScrollableToolbar) {}
-
-  func toolbar(_ toolbar: AnimatedScrollableToolbar, willShow subitems: [AnimatedScrollableToolbar.ActionItem], atIndex index: Int) {}
-  func toolbar(_ toolbar: AnimatedScrollableToolbar, didShow subitems: [AnimatedScrollableToolbar.ActionItem], atIndex index: Int) {}
-}
-
-// MARK: - AnimatedScrollableToolbar
+// MARK: AnimatedScrollableToolbar
 public class AnimatedScrollableToolbar: UIView {
 
   public weak var delegate: AnimatedScrollableToolbarDelegate?
@@ -73,7 +50,7 @@ public class AnimatedScrollableToolbar: UIView {
   private var subitemViews: [ActionItemView] = []
   private var subitemTapGesture: UITapGestureRecognizer?
 
-  public convenience init(items: [ActionItem]) {
+  public convenience init(items: [AnimatedScrollableToolbarActionItem]) {
 
     self.init(frame: CGRect.zero)
 
@@ -117,10 +94,124 @@ public class AnimatedScrollableToolbar: UIView {
       delegate?.toolbarDidHideSubitems(toolbar: self)
     }
   }
-
 }
 
-// MARK: - Gesture Handler
+// MARK:
+// MARK: AnimatedScrollableToolbarDelegate
+public protocol AnimatedScrollableToolbarDelegate: class {
+  func toolbar(_ toolbar: AnimatedScrollableToolbar, willSelect item: AnimatedScrollableToolbarActionItem)
+  func toolbar(_ toolbar: AnimatedScrollableToolbar, didSelect item: AnimatedScrollableToolbarActionItem)
+
+  func toolbarWillHideSubitems(toolbar: AnimatedScrollableToolbar)
+  func toolbarDidHideSubitems(toolbar: AnimatedScrollableToolbar)
+
+  func toolbar(_ toolbar: AnimatedScrollableToolbar, willShow subitems: [AnimatedScrollableToolbarActionItem], atIndex index: Int)
+  func toolbar(_ toolbar: AnimatedScrollableToolbar, didShow subitems: [AnimatedScrollableToolbarActionItem], atIndex index: Int)
+}
+
+// MARK:
+// MARK: AnimatedScrollableToolbarActionItem
+public struct AnimatedScrollableToolbarActionItem {
+
+  public let identifier: String
+  public let image: UIImage
+  public let title: String?
+  public let action: Selector?
+  public weak var target: AnyObject?
+  public var subItems: [AnimatedScrollableToolbarActionItem] = []
+  public var tintColor: UIColor?
+  public var isExchangeable: Bool = true
+
+  public init(identifier: String, image: UIImage, title: String? = nil, target: AnyObject? = nil, action: Selector? = nil) {
+    self.identifier = identifier
+    self.image = image
+    self.target = target
+    self.action = action
+    self.title = title
+
+  }
+}
+
+// MARK:
+// MARK: AnimatedScrollableToolbarCustomStyle
+public struct AnimatedScrollableToolbarCustomStyle {
+  public let backgroundColor: UIColor
+  public let blurEffect: UIBlurEffect
+
+  /// Tint color of selected item
+  public let tintColor: UIColor
+  /// Tint color of unselected color
+  public let unselectedItemTintColor: UIColor
+  public let selectionIndicatorImage: UIImage
+
+  public init(backgroundColor: UIColor, blurEffect: UIBlurEffect, tintColor: UIColor, unselectedItemTintColor: UIColor, selectionIndicatorImage: UIImage) {
+    self.backgroundColor = backgroundColor
+    self.blurEffect = blurEffect
+    self.tintColor = tintColor
+    self.unselectedItemTintColor = unselectedItemTintColor
+    self.selectionIndicatorImage = selectionIndicatorImage
+  }
+}
+
+// MARK:
+// MARK: AnimatedScrollableToolbarStyle
+public enum AnimatedScrollableToolbarStyle {
+  case light, dark, custom(AnimatedScrollableToolbarCustomStyle)
+
+  private var backgroundColor: UIColor {
+    switch self {
+    case .light:
+      return .clear()
+    case .dark:
+      return UIColor(white: 0.2, alpha: 0.2)
+    case .custom(let style):
+      return style.backgroundColor
+    }
+  }
+
+  private var blueEffect: UIBlurEffect {
+    switch self {
+    case .light:
+      return UIBlurEffect(style: .light)
+    case .dark:
+      return UIBlurEffect(style: .dark)
+    case .custom(let style):
+      return style.blurEffect
+    }
+  }
+
+  private var tintColor: UIColor? {
+    switch self {
+    case .light, .dark:
+      return .white()
+    case .custom(let style):
+      return style.tintColor
+    }
+  }
+
+  private var unselectedItemTintColor: UIColor? {
+    switch self {
+    case .light, .dark:
+      return .white()
+    case .custom(let style):
+      return style.unselectedItemTintColor
+    }
+  }
+
+  private var selectionIndicatorImage: UIImage? {
+    switch self {
+    case .light:
+      return UIColor(white: 0.8, alpha: 0.3).generatedImage
+    case .dark:
+      return UIColor(white: 0.6, alpha: 0.6).generatedImage
+    case .custom(let style):
+      return style.selectionIndicatorImage
+    }
+  }
+}
+
+// MARK:
+// MARK: Gesture Handler
 extension AnimatedScrollableToolbar {
 
   // Change selection and fire the animation.
@@ -221,6 +312,8 @@ extension AnimatedScrollableToolbar {
 
 }
 
+// MARK:
+// MARK: UIGestureRecognizerDelegate
 extension AnimatedScrollableToolbar: UIGestureRecognizerDelegate {
   public override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
     guard gestureRecognizer == tapGesture else {
@@ -231,7 +324,8 @@ extension AnimatedScrollableToolbar: UIGestureRecognizerDelegate {
   }
 }
 
-// MARK: - Helpers
+// MARK:
+// MARK: Helpers
 private extension AnimatedScrollableToolbar {
 
   func setupBlurView() {
@@ -255,7 +349,7 @@ private extension AnimatedScrollableToolbar {
     scrollView.addSubview(contentView)
   }
 
-  func setupActionItemViews(items: [ActionItem]) {
+  func setupActionItemViews(items: [AnimatedScrollableToolbarActionItem]) {
 
     if items.isEmpty {
       return
@@ -377,7 +471,7 @@ private extension AnimatedScrollableToolbar {
     previousItemView.iconImageView.tintColor = self.style.unselectedItemTintColor
   }
 
-  func popupSubitems(_ subitems: [ActionItem], atIndex index: Int) {
+  func popupSubitems(_ subitems: [AnimatedScrollableToolbarActionItem], atIndex index: Int) {
 
     var constraints: [NSLayoutConstraint] = []
 
@@ -426,7 +520,7 @@ private extension AnimatedScrollableToolbar {
       constraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "H:|-<=\(margin)-\(layoutAttendees.joined(separator: "-\(AnimatedScrollableToolbar.subitemLeadingGap)-"))-<=\(margin)-|", options: [.alignAllTop, .alignAllBottom], metrics: nil, views: layoutViews))
     }
 
-    func buildSubitemView(for item: ActionItem, atIndex index: Int) -> ActionItemView {
+    func buildSubitemView(for item: AnimatedScrollableToolbarActionItem, atIndex index: Int) -> ActionItemView {
       let itemView = ActionItemView(item: item)
       itemView.translatesAutoresizingMaskIntoConstraints = false
       itemView.iconImageView.image = item.image
@@ -508,113 +602,9 @@ private extension AnimatedScrollableToolbar {
   static let expandedToolbarHeight: CGFloat = 44 + 36 + 6
 }
 
-
-extension AnimatedScrollableToolbar {
-
-  // MARK: Action Item
-  public struct ActionItem {
-
-    public let image: UIImage
-    public let title: String?
-    public let action: Selector?
-    public weak var target: AnyObject?
-    public var subItems: [ActionItem] = []
-    public var tintColor: UIColor?
-    public var isExchangeable: Bool = true
-
-    public init(image: UIImage, title: String? = nil, target: AnyObject? = nil, action: Selector? = nil) {
-
-      self.image = image
-      self.target = target
-      self.action = action
-      self.title = title
-
-    }
-  }
-
-}
-
-extension AnimatedScrollableToolbar {
-
-  // MARK: - ToolbarCustomStyle
-  public struct AnimatedScrollableToolbarCustomStyle {
-    public let backgroundColor: UIColor
-    public let blurEffect: UIBlurEffect
-
-    /// Tint color of selected item
-    public let tintColor: UIColor
-    /// Tint color of unselected color
-    public let unselectedItemTintColor: UIColor
-    public let selectionIndicatorImage: UIImage
-
-    public init(backgroundColor: UIColor, blurEffect: UIBlurEffect, tintColor: UIColor, unselectedItemTintColor: UIColor, selectionIndicatorImage: UIImage) {
-      self.backgroundColor = backgroundColor
-      self.blurEffect = blurEffect
-      self.tintColor = tintColor
-      self.unselectedItemTintColor = unselectedItemTintColor
-      self.selectionIndicatorImage = selectionIndicatorImage
-    }
-  }
-
-  // MARK: - AnimatedScrollableToolbarStyle
-  public enum AnimatedScrollableToolbarStyle {
-    case light, dark, custom(AnimatedScrollableToolbarCustomStyle)
-
-    private var backgroundColor: UIColor {
-      switch self {
-      case .light:
-        return .clear()
-      case .dark:
-        return UIColor(white: 0.2, alpha: 0.2)
-      case .custom(let style):
-        return style.backgroundColor
-      }
-    }
-
-    private var blueEffect: UIBlurEffect {
-      switch self {
-      case .light:
-        return UIBlurEffect(style: .light)
-      case .dark:
-        return UIBlurEffect(style: .dark)
-      case .custom(let style):
-        return style.blurEffect
-      }
-    }
-
-    private var tintColor: UIColor? {
-      switch self {
-      case .light, .dark:
-        return .white()
-      case .custom(let style):
-        return style.tintColor
-      }
-    }
-
-    private var unselectedItemTintColor: UIColor? {
-      switch self {
-      case .light, .dark:
-        return .white()
-      case .custom(let style):
-        return style.unselectedItemTintColor
-      }
-    }
-
-    private var selectionIndicatorImage: UIImage? {
-      switch self {
-      case .light:
-        return UIColor(white: 0.8, alpha: 0.3).generatedImage
-      case .dark:
-        return UIColor(white: 0.6, alpha: 0.6).generatedImage
-      case .custom(let style):
-        return style.selectionIndicatorImage
-      }
-    }
-  }
-}
-
 private extension AnimatedScrollableToolbar {
 
+  // MARK:
   // MARK: - ActionItemView
   class ActionItemView: UIView {
 
@@ -627,13 +617,13 @@ private extension AnimatedScrollableToolbar {
       get { return iconImageView.tintColor }
     }
 
-    var actionItem: ActionItem! {
+    var actionItem: AnimatedScrollableToolbarActionItem! {
       didSet { iconImageView.image = actionItem.image }
     }
     let backgroundImageView: UIImageView
     let iconImageView: UIImageView
 
-    convenience init(item: ActionItem) {
+    convenience init(item: AnimatedScrollableToolbarActionItem) {
       self.init(frame: CGRect.zero)
       self.actionItem = item
       self.iconImageView.image = item.image
@@ -674,11 +664,25 @@ private extension AnimatedScrollableToolbar {
         backgroundImageView.topAnchor.constraint(equalTo: topAnchor),
         backgroundImageView.bottomAnchor.constraint(equalTo: bottomAnchor)
       ])
+
     }
   }
 }
 
-// MARK: - UIColor
+// MARK:
+// MARK: AnimatedScrollableToolbarDelegate default empty implementations
+public extension AnimatedScrollableToolbarDelegate {
+  func toolbar(_ toolbar: AnimatedScrollableToolbar, willSelect item: AnimatedScrollableToolbarActionItem) {}
+  func toolbar(_ toolbar: AnimatedScrollableToolbar, didSelect item: AnimatedScrollableToolbarActionItem) {}
+
+  func toolbarWillHideSubitems(toolbar: AnimatedScrollableToolbar) {}
+  func toolbarDidHideSubitems(toolbar: AnimatedScrollableToolbar) {}
+
+  func toolbar(_ toolbar: AnimatedScrollableToolbar, willShow subitems: [AnimatedScrollableToolbarActionItem], atIndex index: Int) {}
+  func toolbar(_ toolbar: AnimatedScrollableToolbar, didShow subitems: [AnimatedScrollableToolbarActionItem], atIndex index: Int) {}
+}
+
+// MARK: UIColor
 private extension UIColor {
   var generatedImage: UIImage? {
     let rect = CGRect(x: 0, y: 0, width: 1, height: 1)
