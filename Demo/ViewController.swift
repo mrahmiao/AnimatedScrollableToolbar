@@ -25,8 +25,8 @@ class ViewController: UIViewController {
     constraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "V:|[imageView]|", options: [], metrics: nil, views: ["imageView": imageView]))
 
     let cameraImage = UIImage(named: "Camera")!.withRenderingMode(.alwaysTemplate)
-    let cameraItem = AnimatedScrollableToolbar.ActionItem(image: cameraImage, target: self, action: #selector(ViewController.handleToolbarTap(toolbar:)))
-    var actionItem = AnimatedScrollableToolbar.ActionItem(image: UIImage(named: "Action")!.withRenderingMode(.alwaysTemplate), target: self, action: #selector(ViewController.handleToolbarTap(toolbar:)))
+    let cameraItem = AnimatedScrollableToolbarActionItem(identifier: "", image: cameraImage, target: self, action: #selector(ViewController.handleToolbarTap(toolbar:)))
+    var actionItem = AnimatedScrollableToolbarActionItem(identifier: "", image: UIImage(named: "Action")!.withRenderingMode(.alwaysTemplate), target: self, action: #selector(ViewController.handleToolbarTap(toolbar:)))
     actionItem.subItems = [cameraItem, actionItem, cameraItem, cameraItem, actionItem, cameraItem, cameraItem, actionItem, cameraItem]
     let items = [cameraItem, actionItem, cameraItem, actionItem, cameraItem, actionItem, cameraItem, actionItem]
 

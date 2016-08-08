@@ -54,14 +54,14 @@ public class AnimatedScrollableToolbar: UIView {
 
     self.init(frame: CGRect.zero)
 
-    let screenWidth = UIScreen.main().bounds.width
+    let screenWidth = UIScreen.main.bounds.width
     self.itemWidth = items.count < AnimatedScrollableToolbar.maximumItemCount ? screenWidth / CGFloat(items.count) : screenWidth / CGFloat(AnimatedScrollableToolbar.maximumItemCount)
     setupActionItemViews(items: items)
   }
 
   private override init(frame: CGRect) {
 
-    let width = UIScreen.main().bounds.width
+    let width = UIScreen.main.bounds.width
     let height = AnimatedScrollableToolbar.defaultHeight
 
     scrollView = UIScrollView(frame: CGRect.zero)
@@ -70,7 +70,7 @@ public class AnimatedScrollableToolbar: UIView {
     visualEffectView = UIVisualEffectView()
 
     super.init(frame: CGRect(origin: frame.origin, size: CGSize(width: width, height: height)))
-    super.backgroundColor = .clear()
+    super.backgroundColor = .clear
 
     setupBlurView()
     setupScrollView()
@@ -161,7 +161,7 @@ public enum AnimatedScrollableToolbarStyle {
   private var backgroundColor: UIColor {
     switch self {
     case .light:
-      return .clear()
+      return .clear
     case .dark:
       return UIColor(white: 0.2, alpha: 0.2)
     case .custom(let style):
@@ -183,7 +183,7 @@ public enum AnimatedScrollableToolbarStyle {
   private var tintColor: UIColor? {
     switch self {
     case .light, .dark:
-      return .white()
+      return .white
     case .custom(let style):
       return style.tintColor
     }
@@ -192,7 +192,7 @@ public enum AnimatedScrollableToolbarStyle {
   private var unselectedItemTintColor: UIColor? {
     switch self {
     case .light, .dark:
-      return .white()
+      return .white
     case .custom(let style):
       return style.unselectedItemTintColor
     }
@@ -217,7 +217,7 @@ extension AnimatedScrollableToolbar {
   // Change selection and fire the animation.
   func handleTapGesture(_ gesture: UITapGestureRecognizer) {
 
-    guard let (newIndex, previousItemView, selectedItemView) = itemViewsUnderGesture(gesture), actionItem = selectedItemView.actionItem else {
+    guard let (newIndex, previousItemView, selectedItemView) = itemViewsUnderGesture(gesture), let actionItem = selectedItemView.actionItem else {
       return
     }
 
@@ -259,8 +259,8 @@ extension AnimatedScrollableToolbar {
       })
     }
 
-    if let action = actionItem.action, target = actionItem.target {
-      UIApplication.shared().sendAction(action, to: target, from: self, for: nil)
+    if let action = actionItem.action, let target = actionItem.target {
+      UIApplication.shared.sendAction(action, to: target, from: self, for: nil)
     }
 
     delegate?.toolbar(self, didSelect: actionItem)
@@ -300,11 +300,11 @@ extension AnimatedScrollableToolbar {
         exchangeMainItemView(mainItemView, with: itemView, atIndex: index)
       }
 
-      guard let action = itemView.actionItem.action, target = itemView.actionItem.target else {
+      guard let action = itemView.actionItem.action, let target = itemView.actionItem.target else {
         return
       }
 
-      UIApplication.shared().sendAction(action, to: target, from: self, for: nil)
+      UIApplication.shared.sendAction(action, to: target, from: self, for: nil)
       return
 
     }
@@ -344,7 +344,7 @@ private extension AnimatedScrollableToolbar {
 
   func setupContentView() {
     contentView.translatesAutoresizingMaskIntoConstraints = false
-    contentView.backgroundColor = .clear()
+    contentView.backgroundColor = .clear
     contentView.addSubview(animationImageView)
     scrollView.addSubview(contentView)
   }
@@ -482,12 +482,12 @@ private extension AnimatedScrollableToolbar {
       subitemScrollView.translatesAutoresizingMaskIntoConstraints = false
       subitemScrollView.showsHorizontalScrollIndicator = false
       subitemScrollView.showsVerticalScrollIndicator = false
-      subitemScrollView.backgroundColor = .clear()
+      subitemScrollView.backgroundColor = .clear
 
       let subitemContentView = UIView(frame: CGRect.zero)
       self.subitemContentView = subitemContentView
       subitemContentView.translatesAutoresizingMaskIntoConstraints = false
-      subitemContentView.backgroundColor = .clear()
+      subitemContentView.backgroundColor = .clear
 
       subitemScrollView.addSubview(subitemContentView)
       addSubview(subitemScrollView)
@@ -542,7 +542,7 @@ private extension AnimatedScrollableToolbar {
     }
 
     func calcMargin() -> CGFloat {
-      let screenWidth = UIScreen.main().bounds.width
+      let screenWidth = UIScreen.main.bounds.width
       let count = CGFloat(subitems.count)
       if subitems.count > AnimatedScrollableToolbar.maximumItemCount {
         return AnimatedScrollableToolbar.subitemLeadingGap
@@ -633,7 +633,7 @@ private extension AnimatedScrollableToolbar {
 
       backgroundImageView = UIImageView(frame: CGRect.zero)
       backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
-      backgroundImageView.backgroundColor = .clear()
+      backgroundImageView.backgroundColor = .clear
 
       iconImageView = UIImageView(frame: CGRect.zero)
       iconImageView.contentMode = .scaleAspectFit
@@ -687,7 +687,7 @@ private extension UIColor {
   var generatedImage: UIImage? {
     let rect = CGRect(x: 0, y: 0, width: 1, height: 1)
 
-    UIGraphicsBeginImageContextWithOptions(rect.size, false, UIScreen.main().scale)
+    UIGraphicsBeginImageContextWithOptions(rect.size, false, UIScreen.main.scale)
     let context = UIGraphicsGetCurrentContext()
     context?.setFillColor(cgColor)
     context?.fill(rect)
